@@ -59,16 +59,14 @@
 			if (src.working || !src.scan)
 				return TRUE
 			if (src.scan.money < 20)
-				for(var/mob/O in hearers(src, null))
-					O.show_message("<span class='subtle'><b>[src]</b> says, 'Insufficient money to play!'</span>", 1)
+				src.visible_message("<span class='subtle'><b>[src]</b> says, 'Insufficient money to play!'</span>")
 				return TRUE
 			src.scan.money -= 20
 			src.plays++
 			src.working = 1
 			src.icon_state = "slots-on"
-			var/roll = rand(1,1350)
 
-			playsound(src.loc, "sound/machines/ding.ogg", 50, 1)
+			playsound(get_turf(src), "sound/machines/ding.ogg", 50, 1)
 			. = TRUE
 			ui_interact(usr, ui)
 			SPAWN_DBG(2.5 SECONDS) // why was this at ten seconds, christ
@@ -103,47 +101,53 @@
 		. = ..()
 
 /obj/submachine/slot_machine/proc/money_roll()
-	if (roll == 1)
-		for(var/mob/O in hearers(src, null))
-			O.show_message("<span class='subtle'><b>[src]</b> says, 'JACKPOT! [src.scan.registered] has won a MILLION CREDITS!'</span>", 1)
-		command_alert("Congratulations to [src.scan.registered] on winning the Jackpot of ONE MILLION CREDITS!", "Jackpot Winner")
-		playsound(src.loc, "sound/misc/airraid_loop_short.ogg", 55, 1)
-		src.scan.money += 1000000
-	else if (roll > 1 && roll <= 5)
-		for(var/mob/O in hearers(src, null))
-			O.show_message("<span class='subtle'><b>[src]</b> says, 'Big Winner! [src.scan.registered] has won a hundred thousand credits!'</span>", 1)
-		command_alert("Congratulations to [src.scan.registered] on winning a hundred thousand credits!", "Big Winner")
-		playsound(src.loc, "sound/misc/klaxon.ogg", 55, 1)
-		src.scan.money += 100000
-	else if (roll > 5 && roll <= 25)
-		for(var/mob/O in hearers(src, null))
-			O.show_message("<span class='subtle'><b>[src]</b> says, 'Big Winner! [src.scan.registered] has won ten thousand credits!'</span>", 1)
-		playsound(src.loc, "sound/misc/klaxon.ogg", 55, 1)
-		src.scan.money += 10000
-	else if (roll > 25 && roll <= 50)
-		for(var/mob/O in hearers(src, null))
-			O.show_message("<span class='subtle'><b>[src]</b> says, 'Winner! [src.scan.registered] has won a thousand credits!'</span>", 1)
-		playsound(src.loc, "sound/musical_instruments/Bell_Huge_1.ogg", 55, 1)
-		src.scan.money += 1000
-	else if (roll > 50 && roll <= 100)
-		for(var/mob/O in hearers(src, null))
-			O.show_message("<span class='subtle'><b>[src]</b> says, 'Winner! [src.scan.registered] has won a hundred credits!'</span>", 1)
-		playsound(src.loc, "sound/musical_instruments/Bell_Huge_1.ogg", 55, 1)
-		src.scan.money += 100
-	else if (roll > 100 && roll <= 200)
-		for(var/mob/O in hearers(src, null))
-			O.show_message("<span class='subtle'><b>[src]</b> says, 'Winner! [src.scan.registered] has won fifty credits!'</span>", 1)
-		playsound(src.loc, "sound/machines/ping.ogg", 55, 1)
-		src.scan.money += 50
-	else if (roll > 200 && roll <= 500)
-		for(var/mob/O in hearers(src, null))
-			O.show_message("<span class='subtle'><b>[src]</b> says, '[src.scan.registered] has won ten credits!'</span>", 1)
-		playsound(src.loc, "sound/machines/ping.ogg", 55, 1)
-		src.scan.money += 10
-	else
-		for(var/mob/O in hearers(src, null))
-			O.show_message("<span class='subtle'><b>[src]</b> says, 'No luck!'</span>", 1)
+	var/roll = rand(1,1400)
+	var/exclamation = ""
+	var/win_sound = "sound/machines/ping.ogg"
+	var/amount_text = "error credits"
+	var/amount = 0
 
+	if (roll == 1)
+		command_alert("Congratulations to [src.scan.registered] on winning the Jackpot of ONE MILLION CREDITS!", "Jackpot Winner")
+		win_sound = "sound/misc/airraid_loop_short.ogg"
+		exclamation = "JACKPOT! "
+		amount = 1000000
+		amount_text = "MILLION CREDITS"
+	else if (roll > 1 && roll <= 5)
+		command_alert("Congratulations to [src.scan.registered] on winning a hundred thousand credits!", "Big Winner")
+		win_sound =  "sound/misc/klaxon.ogg"
+		exclamation = "Big Winner! "
+		amount = 100000
+		amount_text = "a hundred thousand credits"
+	else if (roll > 5 && roll <= 25)
+		win_sound =  "sound/misc/klaxon.ogg"
+		exclamation = "Big Winner! "
+		amount = 10000
+		amount_text = "ten thousand credits"
+	else if (roll > 25 && roll <= 50)
+		win_sound =  "sound/musical_instruments/Bell_Huge_1.ogg"
+		exclamation = "Winner! "
+		amount = 1000
+		amount_text = "a thousand credits"
+	else if (roll > 50 && roll <= 100)
+		win_sound =  "sound/musical_instruments/Bell_Huge_1.ogg"
+		exclamation = "Winner! "
+		amount = 100
+		amount_text = "a hundred credits"
+	else if (roll > 100 && roll <= 200)
+		exclamation = "Winner! "
+		amount = 50
+		amount_text = "fifty credits"
+	else if (roll > 200 && roll <= 500)
+		amount = 10
+		amount_text = "ten credits"
+	else
+		src.visible_message("<span class='subtle'><b>[src]</b> says, 'No luck!'</span>")
+
+	if (amount > 0)
+		src.visible_message("<span class='subtle'><b>[src]</b> says, '[exclamation][src.scan.registered] has won [amount_text]!'</span>")
+		playsound(get_turf(src), "[win_sound]", 55, 1)
+		src.scan.money += amount
 
 /obj/submachine/slot_machine_manta
 	name = "Slot Machine"
