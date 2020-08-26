@@ -470,6 +470,31 @@ datum
 			fluid_b = 120
 			transparency = 255
 
+		disease/flayer_virus
+			name = "Biological Compound M02"
+			id = "flayer_virus"
+			description = "A dangerous biological substance that behaves like nanomachines."
+			reagent_state = LIQUID
+			minimum_to_infect = 200 //because it self replicates from even the tiniest amount
+			fluid_r = 25
+			fluid_g = 36
+			fluid_b = 30
+			transparency = 0
+			disease = /datum/ailment/disease/kuru
+			depletion_rate = 0
+			var/replication_rate = 1.05 //adjustable! meant to signify how it exponentially spreads throughout the body
+			var/purgification_rate = 8 //adjustable!
+
+			on_mob_life(var/mob/M, var/mult)
+        		if (M.reagents)
+          			if (M.reagents.has_reagent("ethanol"))
+            			M.reagents.remove_reagent("flayer_virus", src.purgification_rate)
+          			else
+          				var/curr_amount = M.reagents.get_reagent_amount("flayer_virus") //someone tell me an easy way to make this simple
+            			var/new_amount = (curr_amount * src.replication_rate) - curr_amount //add the difference between multiplied volume and current volume
+            			M.reagents.add_reagent("flayer_virus", new_amount)
+                ..()
+
 		// Marquesas' one stop pathology shop
 		blood/pathogen
 			name = "pathogen"
