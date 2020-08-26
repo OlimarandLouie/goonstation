@@ -488,10 +488,10 @@ datum
 			on_mob_life(var/mob/M, var/mult)
         		if (M.reagents)
           			if (M.reagents.has_reagent("ethanol"))
-            			M.reagents.remove_reagent("flayer_virus", src.purgification_rate)
+            			M.reagents.remove_reagent("flayer_virus", (src.purgification_rate * mult))
           			else
           				var/curr_amount = M.reagents.get_reagent_amount("flayer_virus") //someone tell me an easy way to make this simple
-            			var/new_amount = (curr_amount * src.replication_rate) - curr_amount //add the difference between multiplied volume and current volume
+            			var/new_amount = (curr_amount *(src.replication_rate * mult)) - curr_amount //add the difference between multiplied volume and current volume
             			M.reagents.add_reagent("flayer_virus", new_amount)
                 ..()
 
